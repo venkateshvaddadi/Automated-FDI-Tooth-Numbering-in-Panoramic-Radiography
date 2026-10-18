@@ -5,7 +5,7 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{microtype}
-\usepackage{url}
+\usepackage[hyphens]{url}
 \usepackage{cite}
 \usepackage{hyperref}
 \usepackage{color}
@@ -15,8 +15,10 @@
     colorlinks=true,
     linkcolor=blue,
     citecolor=blue,
-    urlcolor=blue
+    urlcolor=blue,
+    breaklinks=true
 }
+\def\UrlBreaks{\do\/\do-\do_}
 
 \begin{document}
 
@@ -33,6 +35,7 @@
 \thanks{B. Narayanan is with the Department of Oral Medicine and Radiology, Amrita School of Dentistry, Amrita Vishwa Vidyapeetham, Kochi, Kerala, India.}%
 \thanks{A. Kandoth is in Private Practice, Dubai, United Arab Emirates.}%
 \thanks{Corresponding author: Dr. Aneesa Ayoob (aneesa.ayoob@gmail.com).}%
+\thanks{Code, interactive clinical decision-support tool, and pre-trained model weights are publicly available at: \url{https://github.com/venkateshvaddadi/Automated-FDI-Tooth-Numbering-in-Panoramic-Radiography}.}%
 }
 
 \markboth{IEEE Transactions on Medical Imaging / Computer Assisted Radiology, Vol.~XX, No.~X, October~2026}%
@@ -72,6 +75,7 @@ The primary contributions of this work are summarized as follows:
     \item \textbf{Domain-Preserving High-Resolution Protocol}: We implement a standardized high-resolution training protocol ($1280 \times 1280$\,px) coupled with an anatomical domain constraint eliminating horizontal flipping ($\text{fliplr} = 0.0$) to preserve bilateral quadrant identity, providing a unified baseline for fair comparative analysis.
     \item \textbf{External Cross-Dataset Generalization on DENTEX}: Beyond intra-institutional testing ($N=102$), we evaluate all 15 trained architectures without adaptation on the independent DENTEX benchmark ($N=634$), examining the empirical domain resilience of real-time vision transformers relative to convolutional baselines under radiographic shift.
     \item \textbf{Interactive Decision-Support Platform and Reader Study}: We engineer and deploy a responsive web-based clinical interface providing real-time multi-model inference, synchronized FDI odontogram charting, contextual per-tooth inspection, and interactive canvas refinement. In a timed reader study across 50 panoramic radiographs with certified dental surgeons, the system reduced expert charting time from $240 \pm 35$\,s to $28 \pm 8$\,s per case ($p < 0.001$), achieving an 88.3\% reduction in documentation duration while preserving complete clinician oversight.
+    \item \textbf{Open-Source Release and Reproducibility}: To ensure rigorous reproducibility and facilitate clinical adoption, the entire implementation codebase, interactive clinical GUI platform, evaluation benchmarks, and pre-trained model weights for all evaluated detector paradigms are made publicly available at \url{https://github.com/venkateshvaddadi/Automated-FDI-Tooth-Numbering-in-Panoramic-Radiography}.
 \end{enumerate}
 
 The remainder of this paper is organized as follows: Section~\ref{sec:related_work} reviews related literature on automated tooth identification, object-detection paradigms in medical imaging, and external domain generalization. Section~\ref{sec:methods} details the materials and methods, including the FDI numbering formulation, dataset curation, evaluated architectures, and clinical platform architecture. Section~\ref{sec:results} presents the quantitative macro benchmarks, anatomical functional group breakdowns, qualitative subject evaluations, computational complexity metrics, and clinical reader study. Section~\ref{sec:discussion} discusses architectural trade-offs, clinical implications, and study limitations, and Section~\ref{sec:conclusion} concludes the paper.
@@ -563,6 +567,15 @@ Despite achieving state-of-the-art results, several avenues warrant future explo
     \item \textbf{Multitask Pathology Integration}: While tooth numbering provides the structural roadmap, integrating concurrent detection heads for periapical radiolucencies, alveolar bone loss, and proximal caries within the unified RT-DETR/D-FINE framework will further elevate clinical decision support.
     \item \textbf{Edge Hardware Quantization}: Although all evaluated models process radiographs in $<30$\,ms on enterprise workstations, INT8 post-training quantization and TensorRT compilation will facilitate direct integration into low-power embedded dental scanner consoles.
 \end{enumerate}
+
+\section{Reproducibility, Code, and Model Weights Availability}
+\label{sec:availability}
+To foster open science, support multi-center clinical translation, and ensure complete experimental reproducibility, all software artifacts developed in this study are made available to the medical imaging community:
+\begin{itemize}
+    \item \textbf{Source Code Repository}: The complete codebase, encompassing the standardized 32-class training pipeline, inference routines, evaluation scripts, and the interactive human-in-the-loop clinical interface (\texttt{gui\_v2/app\_v2.py}), is hosted at the public GitHub repository: \url{https://github.com/venkateshvaddadi/Automated-FDI-Tooth-Numbering-in-Panoramic-Radiography}.
+    \item \textbf{Trained Model Checkpoints}: Full pre-trained weights for all benchmarked architectures (including YOLO11m, RT-DETR-L, RT-DETR-X, D-FINE-M, Cascade R-CNN, and Faster R-CNN) are hosted via dedicated cloud storage with automated one-command retrieval scripts (\texttt{bash download\_model\_weights.sh}) and direct download access: \url{https://drive.google.com/drive/folders/1QyrHJvjcCHT2chnKBEgRVm-unnwnXXdT?usp=sharing}.
+    \item \textbf{Benchmark Reproduction}: Step-by-step instructions and single-command scripts (\texttt{python reproduce\_benchmark.py}) are provided in the repository to evaluate trained models on sample panoramic radiographs and recreate the reported detection and charting metrics.
+\end{itemize}
 
 \section{Conclusion}
 \label{sec:conclusion}
