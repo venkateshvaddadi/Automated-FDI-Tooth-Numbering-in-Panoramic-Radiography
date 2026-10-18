@@ -1,0 +1,58 @@
+# Aneesa Panoramic Radiography Dataset (Harmonized to 32 FDI Adult Teeth)
+# Set 'path' to the root directory where your dataset is extracted
+path: ./datasets/aneesa
+
+train: images/train
+val:   images/val
+
+nc: 48   # granular annotations (mapped to standard 32 adult FDI classes 11-48 during evaluation)
+
+names:
+  0:  "13"
+  1:  "15"
+  2:  "16"
+  3:  "17"
+  4:  "23"
+  5:  "24"
+  6:  "25"
+  7:  "26"
+  8:  "27"
+  9:  "31"
+  10: "32"
+  11: "33"
+  12: "34"
+  13: "35"
+  14: "36"
+  15: "37"
+  16: "38"
+  17: "41"
+  18: "42"
+  19: "43"
+  20: "44"
+  21: "45"
+  22: "46"
+  23: "47"
+  24: "48"
+  25: "11"
+  26: "12"
+  27: "14"
+  28: "21"
+  29: "22"
+  30: "28"
+  31: "18"
+  32: "21-1"
+  33: "22-1"
+  34: "23-1"
+  35: "24-1"
+  36: "25-1"
+  37: "26-1"
+  38: "27-1"
+  39: "28-1"
+  40: "36-1"
+  41: "15-1"
+  42: "42-1"
+  43: "4"
+  44: "5"
+  45: "18-1"
+  46: "46-1"
+  47: "38-1"
