@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DentalAI - Automated FDI Tooth Numbering</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0b0f19;
+  --bg-card: #111827;
+  --bg-card-sub: #162032;
+  --border-color: #1f293d;
+  --accent-blue: #2563eb;
+  --accent-cyan: #06b6d4;
+  --green-high: #10b981;
+  --amber-low: #f59e0b;
+  --red-missing: #ef4444;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-dim: #64748b;
+  --card-radius: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── Top Header ── */
+.top-header {
+  height: 54px;
+  background: #0f172a;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-logo {
+  font-size: 22px;
+  color: var(--accent-cyan);
+}
+.brand-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #fff;
+}
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  border-left: 1px solid #334155;
+  padding-left: 10px;
+  margin-left: 6px;
+}
+
+/* Workflow Stage Pills */
+.workflow-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wf-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  background: #1e293b;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+.wf-pill.active {
+  background: var(--accent-blue);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(37,99,235,0.4);
+}
+.wf-pill:hover:not(.active) {
+  background: #27354a;
+  color: #fff;
+}
+.wf-num {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+}
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #34d399;
+  font-weight: 500;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+.latency-tag {
+  color: var(--accent-cyan);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.btn-icon {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ── Main App Grid ── */
+.app-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr 340px;
+  gap: 10px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+/* ── Panels Styling ── */
+.panel-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+.panel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #cbd5e1;
+}
+.card-badge {
+  background: #3b82f6;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.badge-magenta { background: #d946ef; }
+.badge-pink { background: #ec4899; }
+.badge-purple { background: #8b5cf6; }
+
+/* Left Column Components */
+select, input[type="range"] {
+  width: 100%;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.source-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.src-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 0;
+  text-align: center;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.src-btn.active {
+  background: var(--accent-blue);
+  color: #fff;
+  border-color: var(--accent-blue);
+}
+.img-thumb-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #162032;
+  border: 1px solid #1f2d45;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.img-thumb-item.active {
+  border-color: var(--accent-blue);
+  background: #1d2c47;
+}
+.thumb-preview {
+  width: 48px;
+  height: 28px;
+  border-radius: 4px;
+  background: #000;
+  object-fit: cover;
+}
+.thumb-info {
+  flex: 1;
+}
+.thumb-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+.thumb-desc {
+  font-size: 10px;
+  color: #10b981;
+}
+
+/* Sliders & Checkboxes */
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+/* Edit Tools Bar */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+.tool-btn {
+  background: #131d2e;
+  border: 1px solid #22324d;
+  color: #cbd5e1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.tool-btn .t-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.tool-btn .t-label {
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+.tool-btn:hover {
+  background: #1c2b42;
+  border-color: #3b82f6;
+  color: #fff;
+  transform: translateY(-1px);
+}
+.tool-btn.active {
+  background: #2563eb;
+  border-color: #60a5fa;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(37,99,235,0.4);
+}
+.tool-btn.danger-btn:hover, .tool-btn.danger-btn.active {
+  background: #b91c1c;
+  border-color: #ef4444;
+  color: #fff;
+}
+.tool-hint-box {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: #090d16;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  font-size: 10px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.3;
+}
+
+/* ── Center Viewport Canvas ── */
+.center-viewport {
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  position: relative;
+}
+.canvas-toolbar {
+  height: 38px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 10;
+}
+.canvas-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.canvas-meta b { color: #fff; }
+.canvas-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.c-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.canvas-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#radiograph-canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: crosshair;
+}
+
+/* ── Right Column (Odontogram, Tooth Detail & Metrics) ── */
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+/* FDI Odontogram Grid (Wide Below Canvas) */
+.odontogram-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.arch-row {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 5px;
+}
+.fdi-cell {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px 0;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.fdi-cell:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.2);
+}
+.fdi-cell.high {
+  background: #065f46;
+  border-color: #10b981;
+  color: #a7f3d0;
+}
+.fdi-cell.low {
+  background: #78350f;
+  border-color: #f59e0b;
+  color: #fde68a;
+}
+.fdi-cell.missing {
+  background: #111827;
+  border-color: #374151;
+  color: #4b5563;
+}
+.fdi-cell.selected {
+  outline: 2px solid #38bdf8;
+  box-shadow: 0 0 12px #38bdf8;
+  background: #0369a1 !important;
+  color: #fff !important;
+}
+
+/* Selected Tooth Card (Large Tooth Inspector with Rows) */
+.tooth-detail-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: #162032;
+  border: 1px solid #1f2d45;
+  padding: 14px;
+  border-radius: 8px;
+}
+.tooth-crop-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: #090d16;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+}
+.tooth-crop {
+  width: 160px;
+  height: 200px;
+  background: #000;
+  border: 1.5px solid #38bdf8;
+  border-radius: 6px;
+  object-fit: contain;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+}
+.tooth-kv {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+}
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #0f172a;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+  min-height: 32px;
+}
+.kv-row span:first-child { color: var(--text-dim); font-size: 11px; white-space: nowrap; }
+.kv-row span:last-child { font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: nowrap; }
+
+/* Bounding Box Geometry Container */
+.bbox-container {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.bbox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.bbox-chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.bbox-chip {
+  background: #162032;
+  border: 1px solid #1f2d45;
+  border-radius: 4px;
+  padding: 4px 2px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.chip-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+.chip-val {
+  font-size: 11px;
+  font-weight: 700;
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+
+/* Detection Summary Stats (Refined Clinical Card Layout) */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.summary-box {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 10px 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 58px;
+}
+.summary-val {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.summary-title {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+/* Evaluation Score Boxes */
+.score-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.score-box {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+.score-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #10b981;
+  font-family: 'JetBrains Mono', monospace;
+}
+.score-lbl {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Export Buttons */
+.export-row {
+  display: flex;
+  gap: 6px;
+}
+.btn-export {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 8px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+.btn-save-corrections {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+
+/* Modals & Filesystem Browser Styles */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open {
+  display: flex !important;
+}
+.modal-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  width: 92%;
+  max-width: 580px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  padding: 12px 16px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.modal-footer {
+  padding: 12px 16px;
+  background: #1e293b;
+  border-top: 1px solid #334155;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.preset-pill {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.preset-pill:hover {
+  background: #334155;
+  color: #fff;
+  border-color: #38bdf8;
+}
+.fs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  color: #e2e8f0;
+  transition: background 0.12s;
+}
+.fs-row:hover {
+  background: #1e293b;
+  border-color: #38bdf8;
+}
+.img-pick-item {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #cbd5e1;
+  cursor: pointer;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.img-pick-item:hover {
+  background: #1e293b;
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Top Header ── -->
+<header class="top-header">
+  <div class="brand">
+    <div class="brand-logo">🦷</div>
+    <div>
+      <div class="brand-title">DentalAI</div>
+      <div class="brand-sub">Automated FDI Tooth Numbering | Panoramic Radiography</div>
+    </div>
+  </div>
+
+  <!-- Stage Workflow Navigation -->
+  <div class="workflow-nav">
+    <div class="wf-pill active"><span class="wf-num">1</span> Analyze</div>
+    <div class="wf-pill"><span class="wf-num">2</span> Verify</div>
+    <div class="wf-pill"><span class="wf-num">3</span> Edit</div>
+    <div class="wf-pill"><span class="wf-num">4</span> Export</div>
+  </div>
+
+  <!-- Meta Info & Status -->
+  <div class="header-meta">
+    <div class="status-indicator">
+      <span class="dot"></span> Model: <b id="model-tag">RT-DETR-L</b>
+    </div>
+    <div class="latency-tag">⚡ <span id="latency-tag">92.6 ms</span></div>
+    <button class="btn-icon">⚙️</button>
+    <button class="btn-icon">ℹ️ Help</button>
+  </div>
+</header>
+
+<!-- ── Main App Grid ── -->
+<main class="app-container">
+
+  <!-- ── Left Column: Controls & Tools ── -->
+  <aside class="panel-column">
+    
+    <!-- 1. Image & Model -->
+    <div class="panel-card">
+      <div class="card-header">
+        <span>Image & Model</span>
+        <span class="card-badge">1</span>
+      </div>
+      <div>
+        <label style="font-size: 10px; color: var(--text-dim);">SELECT MODEL ARCHITECTURE</label>
+        <select id="select-model">
+          <option value="RT-DETR-L (1280px)" selected>RT-DETR-L (1280px) - Top Transformer</option>
+          <option value="YOLO11m (1280px)">YOLO11m (1280px) - Top Fast CNN</option>
+          <option value="YOLOv9e (1280px)">YOLOv9e (1280px) - Deep PGI</option>
+          <option value="YOLO11x (1280px)">YOLO11x (1280px) - Extra Large</option>
+          <option value="RT-DETR-X (1280px)">RT-DETR-X (1280px) - Giant Transformer</option>
+          <option value="YOLOv9c (1280px)">YOLOv9c (1280px) - GELAN-C</option>
+        </select>
+      </div>
+
+      <button id="btn-run-inference" style="width:100%; background: linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; border:none; padding:10px 0; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow: 0 2px 8px rgba(37,99,235,0.4);">
+        <span>▶</span> RUN INFERENCE (DETECT & NUMBER)
+      </button>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-size: 10px; color: var(--text-dim); margin-bottom: 2px; display:block; font-weight: 700; letter-spacing: 0.5px;">LOAD RADIOGRAPHS</label>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <!-- 1. Select Folder by Path -->
+          <button id="btn-select-folder" title="Browse or select a directory path on the server" style="padding: 10px 4px; background: #047857; border: 1px solid #10b981; color: #fff; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 6px rgba(16,185,129,0.3); transition: all 0.15s ease;">
+            <span>📁</span> Select Folder
+          </button>
+
+          <!-- 2. Select Image by Path -->
+          <button id="btn-select-image" title="Specify or select an image file path directly" style="padding: 10px 4px; background: #2563eb; border: 1px solid #3b82f6; color: #fff; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 6px rgba(37,99,235,0.3); transition: all 0.15s ease;">
+            <span>🖼️</span> Select Image
+          </button>
+        </div>
+
+        <!-- Direct Server Path Input -->
+        <div style="display: flex; gap: 4px; align-items: center; margin-top: 2px;">
+          <input type="text" id="input-folder-path" placeholder="/path/to/radiographs/folder..." style="flex: 1; padding: 6px 8px; font-size: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #38bdf8; font-family: 'JetBrains Mono', monospace;" title="Paste any folder path on disk and press Load or Enter">
+          <button id="btn-load-path" style="padding: 6px 10px; font-size: 10px; font-weight: 700; background: #1e293b; color: #cbd5e1; border: 1px solid #334155; border-radius: 4px; cursor: pointer;">Load</button>
+        </div>
+
+        <!-- Benchmark Presets -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #64748b; margin-top: 2px; padding: 0 2px;">
+          <span>Presets:</span>
+          <div style="display: flex; gap: 8px;">
+            <a href="#" id="link-preset-val" style="color: #38bdf8; text-decoration: none; cursor: pointer;">Val (102)</a>
+            <span style="color:#334155;">|</span>
+            <a href="#" id="link-preset-train" style="color: #38bdf8; text-decoration: none; cursor: pointer;">Train (472)</a>
+            <span style="color:#334155;">|</span>
+            <a href="#" id="link-preset-dentex" style="color: #94a3b8; text-decoration: none; cursor: pointer;">DENTEX (271)</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Previous/Next & Dropdown Switcher (Like App1) -->
+      <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+        <label style="font-size: 10px; color: var(--text-dim);">NAVIGATE IMAGES (&larr; PREV / NEXT &rarr;)</label>
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <button class="c-btn" id="btn-prev-img" title="Previous Image (Left Arrow)" style="padding: 7px 12px; font-weight: bold; font-size: 13px; background: #1e293b; color: #fff; border: 1px solid #334155; border-radius: 6px; cursor: pointer;">&larr;</button>
+          <select id="select-val-img" style="flex: 1; padding: 6px 8px; font-size: 11px; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 6px; font-family: 'JetBrains Mono', monospace;"></select>
+          <button class="c-btn" id="btn-next-img" title="Next Image (Right Arrow)" style="padding: 7px 12px; font-weight: bold; font-size: 13px; background: #1e293b; color: #fff; border: 1px solid #334155; border-radius: 6px; cursor: pointer;">&rarr;</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); padding: 0 2px;">
+          <span id="img-index-display">Image 1 of 102</span>
+          <span>Keyboard: &larr; / &rarr;</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Inference Settings -->
+    <div class="panel-card">
+      <div class="card-header">
+        <span>Inference Settings</span>
+        <span class="card-badge badge-magenta">2</span>
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Confidence threshold</span>
+          <b id="conf-val">0.25</b>
+        </div>
+        <input type="range" id="conf-slider" min="0.05" max="0.95" step="0.05" value="0.25">
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>NMS IoU</span>
+          <b id="iou-val">0.60</b>
+        </div>
+        <input type="range" id="iou-slider" min="0.10" max="0.90" step="0.05" value="0.60">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+        <label class="check-item"><input type="checkbox" id="chk-boxes" checked> Show bounding boxes</label>
+        <label class="check-item"><input type="checkbox" id="chk-fdi" checked> Show FDI labels</label>
+        <label class="check-item"><input type="checkbox" id="chk-scores" checked> Show confidence scores</label>
+        <label class="check-item"><input type="checkbox" id="chk-uncertain"> Show only uncertain (&lt; 0.70)</label>
+      </div>
+    </div>
+
+    <!-- 3. Image Adjustments -->
+    <div class="panel-card">
+      <div class="card-header">
+        <span>Image Adjustments</span>
+        <span class="card-badge badge-pink">3</span>
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span>Brightness</span><b id="val-bright">0%</b></div>
+        <input type="range" id="slider-bright" min="-100" max="100" value="0">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span>Contrast</span><b id="val-contrast">0%</b></div>
+        <input type="range" id="slider-contrast" min="-100" max="100" value="0">
+      </div>
+    </div>
+
+    <!-- 4. Interactive Editing Tools -->
+    <div class="panel-card">
+      <div class="card-header">
+        <span>Editing Tools</span>
+        <span class="card-badge badge-purple">4</span>
+      </div>
+      <div class="tool-grid">
+        <button class="tool-btn active" id="tool-edit" title="Move or resize bounding boxes">
+          <span class="t-icon">📐</span>
+          <span class="t-label">Move / Resize</span>
+        </button>
+        <button class="tool-btn" id="tool-draw" title="Draw a new tooth bounding box">
+          <span class="t-icon">✏️</span>
+          <span class="t-label">Draw New</span>
+        </button>
+        <button class="tool-btn" id="tool-select" title="Inspect selected tooth">
+          <span class="t-icon">👆</span>
+          <span class="t-label">Select</span>
+        </button>
+        <button class="tool-btn" id="tool-label" title="Change FDI tooth number">
+          <span class="t-icon">🏷️</span>
+          <span class="t-label">Relabel</span>
+        </button>
+        <button class="tool-btn danger-btn" id="tool-del" style="grid-column: span 2;" title="Delete selected bounding box">
+          <span class="t-icon">🗑️</span>
+          <span class="t-label">Delete Box</span>
+        </button>
+      </div>
+      <div class="tool-hint-box">
+        <span id="tool-hint-icon">💡</span>
+        <span id="tool-hint-text">Drag box to reposition, or drag 4 corners to resize.</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Center Column: Canvas Viewport ── -->
+  <section class="center-viewport">
+    <div class="canvas-toolbar">
+      <div class="canvas-meta">
+        Patient: <b id="meta-patient">220</b> &nbsp;|&nbsp; Image: <b id="meta-filename">IMG_220.jpg</b> &nbsp;|&nbsp; Source: <span id="meta-src">Validation Set</span>
+      </div>
+      <div class="canvas-actions">
+        <button class="c-btn" id="btn-fit">Fit to width</button>
+        <button class="c-btn" id="btn-zoom-in">🔍 +</button>
+        <button class="c-btn" id="btn-zoom-out">🔍 -</button>
+        <button class="c-btn" id="btn-reset">100%</button>
+        <button class="c-btn" id="btn-split">🔲 Split view</button>
+      </div>
+    </div>
+
+    <div class="canvas-area">
+      <canvas id="radiograph-canvas"></canvas>
+    </div>
+
+    <!-- 5. FDI Tooth Chart (Directly Below Image Canvas for Prominence & Large Display) -->
+    <div class="panel-card" style="margin: 6px 0; padding: 10px 14px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px;">
+      <div class="card-header" style="margin-bottom: 8px;">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.5px;">TOOTH CHART (FDI / ISO 3950)</span>
+        <div style="display: flex; gap: 14px; font-size: 11px;">
+          <span style="color: #10b981;">● Detected (high conf &ge; 0.70)</span>
+          <span style="color: #f59e0b;">● Low conf (&lt; 0.70)</span>
+          <span style="color: #64748b;">○ Missing / Unverified</span>
+        </div>
+      </div>
+
+      <div class="odontogram-panel">
+        <!-- Maxillary Arch (Upper): 18 -> 11 | 21 -> 28 -->
+        <div class="arch-row" id="upper-arch">
+          <!-- 18 to 28 cells generated dynamically -->
+        </div>
+        <!-- Mandibular Arch (Lower): 48 -> 41 | 31 -> 38 -->
+        <div class="arch-row" id="lower-arch">
+          <!-- 48 to 38 cells generated dynamically -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Right Column: Selected Tooth Details, Summary, Metrics & Export ── -->
+  <aside class="right-column">
+
+    <!-- 6. Selected Tooth Details -->
+    <div class="panel-card">
+      <div class="card-header">
+        <span>Selected Tooth Details</span>
+        <span class="card-badge badge-magenta">6</span>
+      </div>
+      <div class="tooth-detail-card">
+        <div class="tooth-crop-wrapper">
+          <canvas class="tooth-crop" id="tooth-crop-canvas"></canvas>
+        </div>
+        <div class="tooth-kv">
+          <div class="kv-row">
+            <span>FDI Tooth Number</span>
+            <b style="color:#f59e0b; font-size:16px; font-family:'JetBrains Mono',monospace;" id="detail-fdi">11</b>
+          </div>
+          <div class="kv-row">
+            <span>Confidence Score</span>
+            <b id="detail-conf" style="font-size:14px; color:#10b981; font-family:'JetBrains Mono',monospace;">0.87</b>
+          </div>
+          <div class="kv-row">
+            <span>Validation Status</span>
+            <span id="detail-status" style="color: #10b981; font-weight:700; font-size: 11px;">Verified High</span>
+          </div>
+
+          <!-- Dedicated Bounding Box Geometry Container (Zero Wrapping, Clean 4-Field Chips) -->
+          <div class="bbox-container">
+            <div class="bbox-header">
+              <span>Bounding Box</span>
+              <span id="detail-bbox" style="color: #64748b; font-size: 10px; font-family: 'JetBrains Mono', monospace;">[1300, 324, 112, 290]</span>
+            </div>
+            <div class="bbox-chips">
+              <div class="bbox-chip"><span class="chip-lbl">X</span><span class="chip-val" id="bbox-x">1300</span></div>
+              <div class="bbox-chip"><span class="chip-lbl">Y</span><span class="chip-val" id="bbox-y">324</span></div>
+              <div class="bbox-chip"><span class="chip-lbl">W</span><span class="chip-val" id="bbox-w">112</span></div>
+              <div class="bbox-chip"><span class="chip-lbl">H</span><span class="chip-val" id="bbox-h">290</span></div>
+            </div>
+          </div>
+
+          <button class="c-btn" style="margin-top: 4px; width: 100%; padding: 8px 0; font-size: 12px; font-weight: 700; background: var(--accent-blue); color: #fff; border-radius: 6px;" id="btn-mark-correct">✓ Mark as Correct</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Detection Summary -->
+    <div class="panel-card">
+      <div class="card-header">
+        <span>Detection Summary</span>
+        <span class="card-badge badge-pink">7</span>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-box">
+          <div class="summary-val" style="color:#38bdf8;" id="sum-total">30/32</div>
+          <div class="summary-title">Detected</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-val" style="color:#10b981;" id="sum-high">30</div>
+          <div class="summary-title">High Conf</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-val" style="color:#f59e0b;" id="sum-low">0</div>
+          <div class="summary-title">Low Conf</div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-val" style="color:#ef4444;" id="sum-missing">2</div>
+          <div class="summary-title">Missing</div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- 10. Export & Report Actions -->
+    <div class="panel-card">
+      <div class="card-header">
+        <span>Export & Actions</span>
+        <span class="card-badge">10</span>
+      </div>
+      <div class="export-row">
+        <button class="btn-export" id="btn-exp-csv">Export FDI Chart</button>
+        <button class="btn-export" id="btn-exp-json">Export JSON</button>
+        <button class="btn-export btn-save-corrections" id="btn-save-corrections">Save Corrections</button>
+      </div>
+    </div>
+
+  </aside>
+</main>
+
+<script>
+// ── State ───────────────────────────────────────────────────────────
+const FDI_UPPER = ["18","17","16","15","14","13","12","11","21","22","23","24","25","26","27","28"];
+const FDI_LOWER = ["48","47","46","45","44","43","42","41","31","32","33","34","35","36","37","38"];
+
+const QUAD_COLORS = {
+  "1": "#EB3C3C", // Q1: Red
+  "2": "#3296FF", // Q2: Blue
+  "3": "#28CD64", // Q3: Green
+  "4": "#F5A523", // Q4: Orange
+};
+
+
+
+// ── DOM Initialization ──────────────────────────────────────────────
+const upperArchEl = document.getElementById("upper-arch");
+const lowerArchEl = document.getElementById("lower-arch");
+const canvas = document.getElementById("radiograph-canvas");
+const ctx = canvas.getContext("2d");
+
+function initOdontogram() {
+  upperArchEl.innerHTML = "";
+  lowerArchEl.innerHTML = "";
+  
+  FDI_UPPER.forEach(num => {
+    const el = document.createElement("div");
+    el.className = "fdi-cell high";
+    el.id = `cell-${num}`;
+    el.innerText = num;
+    el.onclick = () => selectToothByFdi(num);
+    upperArchEl.appendChild(el);
+  });
+
+  FDI_LOWER.forEach(num => {
+    const el = document.createElement("div");
+    el.className = "fdi-cell high";
+    el.id = `cell-${num}`;
+    el.innerText = num;
+    el.onclick = () => selectToothByFdi(num);
+    lowerArchEl.appendChild(el);
+  });
+}
+
+function selectToothByFdi(fdiNum) {
+  document.querySelectorAll(".fdi-cell").forEach(c => c.classList.remove("selected"));
+  const c = document.getElementById(`cell-${fdiNum}`);
+  if (c) c.classList.add("selected");
+
+  const idx = currentBoxes.findIndex(b => b.cls === fdiNum);
+  if (idx >= 0) {
+    selectedBoxIndex = idx;
+    updateSelectedToothPanel(currentBoxes[idx]);
+    redrawCanvas();
+  }
+}
+
+function updateSelectedToothPanel(box) {
+  document.getElementById("detail-fdi").innerText = box.cls;
+  const bx = Math.round(box.x1);
+  const by = Math.round(box.y1);
+  const bw = Math.round(box.x2 - box.x1);
+  const bh = Math.round(box.y2 - box.y1);
+
+  const elX = document.getElementById("bbox-x");
+  if (elX) {
+    document.getElementById("bbox-x").innerText = bx;
+    document.getElementById("bbox-y").innerText = by;
+    document.getElementById("bbox-w").innerText = bw;
+    document.getElementById("bbox-h").innerText = bh;
+  }
+  document.getElementById("detail-bbox").innerText = `[${bx}, ${by}, ${bw}, ${bh}]`;
+  
+  const statusEl = document.getElementById("detail-status");
+  if (box.conf >= 0.70) {
+    statusEl.innerText = "Verified High";
+    statusEl.style.color = "#10b981";
+  } else {
+    statusEl.innerText = "Low Confidence";
+    statusEl.style.color = "#f59e0b";
+  }
+
+  // High-Resolution Large Tooth Crop (160x200 with contextual padding)
+  const cropCanvas = document.getElementById("tooth-crop-canvas");
+  cropCanvas.width = 160;
+  cropCanvas.height = 200;
+  const cCtx = cropCanvas.getContext("2d");
+  cCtx.imageSmoothingEnabled = true;
+  cCtx.imageSmoothingQuality = "high";
+  cCtx.clearRect(0, 0, 160, 200);
+
+  // Add 10% context padding around bounding box for better clinical visualization
+  const bw = box.x2 - box.x1;
+  const bh = box.y2 - box.y1;
+  const padX = bw * 0.12;
+  const padY = bh * 0.12;
+  const sx = Math.max(0, box.x1 - padX);
+  const sy = Math.max(0, box.y1 - padY);
+  const sw = Math.min(rawImg.naturalWidth - sx, bw + padX * 2);
+  const sh = Math.min(rawImg.naturalHeight - sy, bh + padY * 2);
+
+  cCtx.drawImage(rawImg, sx, sy, sw, sh, 0, 0, 160, 200);
+}
+
+// ── Draw Radiograph & Bounding Boxes ────────────────────────────────
+function redrawCanvas() {
+  if (!rawImg.complete || !rawImg.naturalWidth) return;
+  canvas.width = rawImg.naturalWidth;
+  canvas.height = rawImg.naturalHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(rawImg, 0, 0);
+
+  const showBoxes = document.getElementById("chk-boxes").checked;
+  const showFdi = document.getElementById("chk-fdi").checked;
+  const showScores = document.getElementById("chk-scores").checked;
+
+  currentBoxes.forEach((b, idx) => {
+    const quad = b.cls[0];
+    const color = QUAD_COLORS[quad] || "#10b981";
+    const isSelected = (idx === selectedBoxIndex);
+
+    if (showBoxes) {
+      ctx.lineWidth = isSelected ? 3 : 2;
+      ctx.strokeStyle = isSelected ? "#38bdf8" : (b.conf < 0.70 ? "#f59e0b" : color);
+      ctx.strokeRect(b.x1, b.y1, b.x2 - b.x1, b.y2 - b.y1);
+      
+      ctx.fillStyle = isSelected ? "rgba(56,189,248,0.18)" : "rgba(0,0,0,0.1)";
+      ctx.fillRect(b.x1, b.y1, b.x2 - b.x1, b.y2 - b.y1);
+
+      // Draw 4 resize handles on selected box for interactive adjustments
+      if (isSelected) {
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#0284c7";
+        ctx.lineWidth = 2;
+        const handleSize = 8;
+        const handles = [
+          [b.x1, b.y1], // nw
+          [b.x2, b.y1], // ne
+          [b.x1, b.y2], // sw
+          [b.x2, b.y2], // se
+        ];
+        handles.forEach(([hx, hy]) => {
+          ctx.fillRect(hx - handleSize/2, hy - handleSize/2, handleSize, handleSize);
+          ctx.strokeRect(hx - handleSize/2, hy - handleSize/2, handleSize, handleSize);
+        });
+      }
+    }
+
+    if (showFdi) {
+      const label = showScores ? `${b.cls} (${b.conf.toFixed(2)})` : `${b.cls}`;
+      ctx.font = "bold 13px Inter, sans-serif";
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = isSelected ? "#38bdf8" : color;
+      ctx.fillRect(b.x1, b.y1 - 18, tw + 8, 18);
+      ctx.fillStyle = "#000000";
+      ctx.fillText(label, b.x1 + 4, b.y1 - 4);
+    }
+  });
+
+  // Render newly drawn rectangle in real-time
+  if (isDrawingNewBox && newBoxStart && newBoxCurrent) {
+    const nx1 = Math.min(newBoxStart.x, newBoxCurrent.x);
+    const ny1 = Math.min(newBoxStart.y, newBoxCurrent.y);
+    const nw = Math.abs(newBoxCurrent.x - newBoxStart.x);
+    const nh = Math.abs(newBoxCurrent.y - newBoxStart.y);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#10b981";
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(nx1, ny1, nw, nh);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(16,185,129,0.2)";
+    ctx.fillRect(nx1, ny1, nw, nh);
+  }
+}
+
+
+
+// ── State Variables ──
+let currentSource = "val";
+let currentImage = "220.jpg";
+let currentBoxes = [];
+let currentGtBoxes = [];
+let selectedBoxIndex = -1;
+let rawImg = new Image();
+let activeTool = "edit"; // select, edit, label, del
+let zoomLevel = 1.0;
+let panX = 0, panY = 0;
+let isDraggingBox = false, dragCorner = null, dragStartX = 0, dragStartY = 0;
+let isResizingBox = false, resizeHandle = null;
+let isDrawingNewBox = false, newBoxStart = null, newBoxCurrent = null;
+
+// ── Brightness & Contrast ──
+function applyFilters() {
+  const b = document.getElementById("slider-bright").value;
+  const c = document.getElementById("slider-contrast").value;
+  document.getElementById("val-bright").innerText = `${b}%`;
+  document.getElementById("val-contrast").innerText = `${c}%`;
+  canvas.style.filter = `brightness(${100 + parseInt(b)}%) contrast(${100 + parseInt(c)}%)`;
+}
+document.getElementById("slider-bright").oninput = applyFilters;
+document.getElementById("slider-contrast").oninput = applyFilters;
+
+// ── Zoom & Pan Controls ──
+document.getElementById("btn-zoom-in").onclick = () => { zoomLevel = Math.min(3.0, zoomLevel + 0.2); updateZoom(); };
+document.getElementById("btn-zoom-out").onclick = () => { zoomLevel = Math.max(0.4, zoomLevel - 0.2); updateZoom(); };
+document.getElementById("btn-reset").onclick = () => { zoomLevel = 1.0; panX = 0; panY = 0; updateZoom(); };
+document.getElementById("btn-fit").onclick = () => { zoomLevel = 1.0; panX = 0; panY = 0; updateZoom(); };
+
+function updateZoom() {
+  canvas.style.transform = `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`;
+  document.getElementById("btn-reset").innerText = `${Math.round(zoomLevel * 100)}%`;
+}
+
+// ── Tool Switcher & Hints ──
+const toolHints = {
+  edit: "Drag box to reposition, or drag 4 corners to resize.",
+  draw: "Click and drag across radiograph to draw a new tooth box.",
+  select: "Click any tooth box to view high-res crop and metadata.",
+  label: "Click any tooth box to reassign its FDI tooth number.",
+  del: "Click any tooth box to permanently delete it."
+};
+
+["select", "edit", "draw", "label", "del"].forEach(t => {
+  const btn = document.getElementById(`tool-${t}`);
+  if (btn) {
+    btn.onclick = () => {
+      document.querySelectorAll(".tool-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeTool = t;
+      const hintText = document.getElementById("tool-hint-text");
+      if (hintText && toolHints[t]) {
+        hintText.innerText = toolHints[t];
+      }
+    };
+  }
+});
+
+// ── Modal Handlers & Filesystem Path Operations (Zero Copy / Zero Upload) ──
+function openModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.add("open");
+}
+
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.remove("open");
+}
+
+let fsCurrentPath = "";
+
+async function openFolderModal() {
+  openModal("modal-select-folder");
+  const initialPath = inputFolderPath.value.trim() || "datasets/aneesa/images/val";
+  document.getElementById("modal-folder-path").value = initialPath;
+  await browseFsTo(initialPath);
+}
+
+function setFolderPath(path) {
+  document.getElementById("modal-folder-path").value = path;
+  browseFsTo(path);
+}
+
+async function browseFsTo(dirPath) {
+  const listEl = document.getElementById("fs-browser-list");
+  listEl.innerHTML = `<div style="color:#64748b; font-size:11px; text-align:center; padding:15px;">Scanning filesystem...</div>`;
+  try {
+    const res = await fetch(`/browse_fs?path=${encodeURIComponent(dirPath)}`);
+    const data = await res.json();
+    if (data.status === "success") {
+      fsCurrentPath = data.current_path;
+      document.getElementById("modal-folder-path").value = data.current_path;
+      const upBtn = document.getElementById("btn-fs-up");
+      if (upBtn) {
+        upBtn.dataset.parent = data.parent_path || "";
+        upBtn.disabled = !data.parent_path;
+      }
+      
+      let html = "";
+      if (data.directories && data.directories.length > 0) {
+        data.directories.forEach(d => {
+          html += `<div class="fs-row" onclick="browseFsTo('${d.path.replace(/'/g, "\\'")}')">
+            <span style="display:flex; align-items:center; gap:6px;"><b>📁</b> ${d.name}</span>
+            <span style="font-size:10px; color:#38bdf8; font-weight:600;">${d.num_images > 0 ? d.num_images + ' imgs' : ''}</span>
+          </div>`;
+        });
+      }
+      if (data.images && data.images.length > 0) {
+        html += `<div style="font-size:10px; color:#94a3b8; padding:4px 6px; font-weight:700;">Radiographs in this folder (${data.images.length}):</div>`;
+        data.images.slice(0, 50).forEach(img => {
+          html += `<div class="fs-row" style="background:#020617; border-color:#1e293b; color:#94a3b8; cursor:default;">
+            <span>🖼️ ${img.name}</span>
+            <span style="font-size:9px; color:#64748b;">${(img.size / 1024).toFixed(0)} KB</span>
+          </div>`;
+        });
+        if (data.images.length > 50) {
+          html += `<div style="font-size:9px; color:#64748b; text-align:center;">+ ${data.images.length - 50} more images</div>`;
+        }
+      }
+      if (!html) {
+        html = `<div style="color:#64748b; font-size:11px; text-align:center; padding:15px;">Folder is empty</div>`;
+      }
+      listEl.innerHTML = html;
+    } else {
+      listEl.innerHTML = `<div style="color:#ef4444; font-size:11px; text-align:center; padding:15px;">${data.error || 'Failed to list directory'}</div>`;
+    }
+  } catch (err) {
+    listEl.innerHTML = `<div style="color:#ef4444; font-size:11px; text-align:center; padding:15px;">Network error: ${err.message}</div>`;
+  }
+}
+
+function navigateFsUp() {
+  const upBtn = document.getElementById("btn-fs-up");
+  if (upBtn && upBtn.dataset.parent) {
+    browseFsTo(upBtn.dataset.parent);
+  }
+}
+
+async function applySelectedFolder() {
+  const path = document.getElementById("modal-folder-path").value.trim();
+  closeModal("modal-select-folder");
+  await loadDirectoryPath(path);
+}
+
+async function loadDirectoryPath(path) {
+  if (!path) return;
+  btnLoadPath.innerText = "⏳";
+  try {
+    const res = await fetch(`/load_folder_path?path=${encodeURIComponent(path)}`);
+    const result = await res.json();
+    if (result.status === "success" && result.images && result.images.length > 0) {
+      currentSource = "custom";
+      inputFolderPath.value = result.path;
+      document.getElementById("meta-src").innerText = `Folder: ${result.path.split("/").pop()} (${result.count} imgs)`;
+      allSourceImages = result.images;
+      populateImageDropdown();
+      // Load directly and run inference in milliseconds!
+      await loadPatientImage(allSourceImages[0]);
+    } else {
+      alert("Failed to load folder: " + (result.error || "No valid images found"));
+    }
+  } catch (err) {
+    alert("Folder load error: " + err.message);
+  } finally {
+    btnLoadPath.innerText = "Load";
+  }
+}
+
+// ── Select Image Modal & Handlers ──
+function openImageModal() {
+  openModal("modal-select-image");
+  document.getElementById("modal-image-path").value = currentImage.includes("/") ? currentImage : "";
+  const curFolder = inputFolderPath.value.trim() || currentSource;
+  document.getElementById("modal-active-folder-name").innerText = curFolder.split("/").pop() || curFolder;
+  populateModalImageList(allSourceImages);
+}
+
+function populateModalImageList(imgList) {
+  const container = document.getElementById("modal-image-list");
+  container.innerHTML = "";
+  if (!imgList || imgList.length === 0) {
+    container.innerHTML = `<div style="grid-column:1/-1; color:#64748b; font-size:11px; text-align:center; padding:15px;">No images loaded</div>`;
+    return;
+  }
+  imgList.forEach(name => {
+    const item = document.createElement("div");
+    item.className = "img-pick-item";
+    item.innerText = name;
+    item.title = name;
+    item.onclick = () => {
+      document.getElementById("modal-image-path").value = name;
+      applySelectedImage();
+    };
+    container.appendChild(item);
+  });
+}
+
+function filterModalImageList() {
+  const q = document.getElementById("modal-image-filter").value.toLowerCase().trim();
+  const filtered = allSourceImages.filter(f => f.toLowerCase().includes(q));
+  populateModalImageList(filtered);
+}
+
+async function applySelectedImage() {
+  const path = document.getElementById("modal-image-path").value.trim();
+  if (!path) {
+    alert("Please select or enter an image path.");
+    return;
+  }
+  closeModal("modal-select-image");
+  if (!allSourceImages.includes(path)) {
+    allSourceImages.unshift(path);
+    populateImageDropdown();
+  }
+  await loadPatientImage(path);
+}
+
+// Bind button clicks
+const btnSelectFolder = document.getElementById("btn-select-folder");
+const btnSelectImage = document.getElementById("btn-select-image");
+const btnLoadPath = document.getElementById("btn-load-path");
+const inputFolderPath = document.getElementById("input-folder-path");
+
+btnSelectFolder.onclick = openFolderModal;
+btnSelectImage.onclick = openImageModal;
+btnLoadPath.onclick = () => loadDirectoryPath(inputFolderPath.value.trim());
+inputFolderPath.onkeydown = (e) => {
+  if (e.key === "Enter") loadDirectoryPath(inputFolderPath.value.trim());
+};
+
+// Preset Links
+document.getElementById("link-preset-val").onclick = (e) => {
+  e.preventDefault();
+  loadDirectoryPath("datasets/aneesa/images/val");
+};
+const presetTrain = document.getElementById("link-preset-train");
+if (presetTrain) {
+  presetTrain.onclick = (e) => {
+    e.preventDefault();
+    loadDirectoryPath("datasets/aneesa/images/train");
+  };
+}
+document.getElementById("link-preset-dentex").onclick = (e) => {
+  e.preventDefault();
+  loadDirectoryPath("/media/venkatesh/academics/aneesa-20261015T111900Z-1-001/aneesa/yolov4/yolo11/external/dentex_yolo/images");
+};
+
+// Drag and drop or Paste support (auto loads and runs)
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+    await loadSingleImageFile(e.dataTransfer.files[0]);
+  }
+});
+window.addEventListener("paste", async (e) => {
+  const items = e.clipboardData && e.clipboardData.items;
+  if (items) {
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (file) { await loadSingleImageFile(file); break; }
+      }
+    }
+  }
+});
+
+async function switchSource(src, specificImg = null) {
+  currentSource = src;
+  if (src === "dentex") {
+    document.getElementById("meta-src").innerText = "Benchmark: External DENTEX";
+  } else if (src === "upload") {
+    document.getElementById("meta-src").innerText = "Uploaded Radiographs";
+  } else if (src === "custom") {
+    document.getElementById("meta-src").innerText = "Custom Folder";
+  } else {
+    document.getElementById("meta-src").innerText = "Benchmark: Validation Set";
+  }
+  
+  await loadImageBrowserList();
+  if (specificImg) {
+    loadPatientImage(specificImg);
+  } else if (allSourceImages.length > 0) {
+    loadPatientImage(allSourceImages[0]);
+  }
+}
+
+let allSourceImages = [];
+
+function populateImageDropdown() {
+  const selEl = document.getElementById("select-val-img");
+  selEl.innerHTML = "";
+  allSourceImages.forEach((fname, idx) => {
+    const opt = document.createElement("option");
+    opt.value = fname;
+    opt.innerText = `${idx + 1}. ${fname}`;
+    if (fname === currentImage) opt.selected = true;
+    selEl.appendChild(opt);
+  });
+  updateNavIndexDisplay();
+}
+
+async function loadImageBrowserList() {
+  const res = await fetch(`/images_list?source=${currentSource}`);
+  const data = await res.json();
+  allSourceImages = data.images || [];
+  populateImageDropdown();
+}
+
+function updateNavIndexDisplay() {
+  const selEl = document.getElementById("select-val-img");
+  const curIdx = allSourceImages.indexOf(currentImage);
+  if (curIdx >= 0 && selEl) {
+    selEl.selectedIndex = curIdx;
+    document.getElementById("img-index-display").innerText = `Image ${curIdx + 1} of ${allSourceImages.length}`;
+  }
+}
+
+// ── Step Image: Left (-1) and Right (+1) Navigation ──
+function stepImage(direction) {
+  if (!allSourceImages.length) return;
+  let curIdx = allSourceImages.indexOf(currentImage);
+  if (curIdx < 0) curIdx = 0;
+  let nextIdx = curIdx + direction;
+  if (nextIdx < 0) nextIdx = allSourceImages.length - 1; // wrap around
+  if (nextIdx >= allSourceImages.length) nextIdx = 0;     // wrap around
+
+  const nextImg = allSourceImages[nextIdx];
+  loadPatientImage(nextImg);
+}
+
+// Bind Prev & Next Buttons in Control Panel
+document.getElementById("btn-prev-img").onclick = () => stepImage(-1);
+document.getElementById("btn-next-img").onclick = () => stepImage(1);
+
+document.getElementById("select-val-img").onchange = (e) => {
+  loadPatientImage(e.target.value);
+};
+
+// Bind Keyboard Arrow Left & Arrow Right (like App1)
+window.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA") return;
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    stepImage(-1);
+  } else if (e.key === "ArrowRight") {
+    e.preventDefault();
+    stepImage(1);
+  }
+});
+
+// ── Load Patient Image & Run Predictions ──
+async function loadPatientImage(filename) {
+  currentImage = filename;
+  const isDirectPath = filename.includes("/") || filename.includes("\\");
+  const displayName = isDirectPath ? filename.split("/").pop() : filename;
+  document.getElementById("meta-filename").innerText = displayName;
+  document.getElementById("meta-patient").innerText = displayName.replace(/\D/g, "") || "001";
+
+  const imgUrl = isDirectPath 
+    ? `/image?path=${encodeURIComponent(filename)}` 
+    : `/image?name=${encodeURIComponent(filename)}&source=${currentSource}`;
+  rawImg.src = imgUrl;
+  rawImg.onload = async () => {
+    const model = document.getElementById("select-model").value;
+    const conf = document.getElementById("conf-slider").value;
+    const iou = document.getElementById("iou-slider").value;
+
+    const predictUrl = isDirectPath 
+      ? `/predict?path=${encodeURIComponent(filename)}&model=${encodeURIComponent(model)}&conf=${conf}&iou=${iou}`
+      : `/predict?img=${encodeURIComponent(filename)}&model=${encodeURIComponent(model)}&source=${currentSource}&conf=${conf}&iou=${iou}`;
+
+    const res = await fetch(predictUrl);
+    const data = await res.json();
+    currentBoxes = data.boxes || [];
+    currentGtBoxes = data.gt_boxes || [];
+
+    document.getElementById("latency-tag").innerText = `${data.latency || 92.4} ms`;
+    document.getElementById("model-tag").innerText = model.split(" ")[0];
+
+    // Summary counters (Clean single-line presentation)
+    document.getElementById("sum-total").innerText = `${currentBoxes.length}/32`;
+    document.getElementById("sum-high").innerText = currentBoxes.filter(b => b.conf >= 0.70).length;
+    document.getElementById("sum-low").innerText = currentBoxes.filter(b => b.conf < 0.70).length;
+    document.getElementById("sum-missing").innerText = Math.max(0, 32 - currentBoxes.length);
+
+    // Odontogram sync
+    document.querySelectorAll(".fdi-cell").forEach(cell => {
+      const fdi = cell.innerText;
+      const found = currentBoxes.find(b => b.cls === fdi);
+      cell.className = "fdi-cell " + (found ? (found.conf >= 0.70 ? "high" : "low") : "missing");
+    });
+
+    updateNavIndexDisplay();
+
+    if (currentBoxes.length > 0) {
+      selectedBoxIndex = 0;
+      updateSelectedToothPanel(currentBoxes[0]);
+    }
+    redrawCanvas();
+  };
+}
+
+// ── Canvas Interaction (Selection, Box Resizing, Box Moving, Drawing, Re-labeling) ──
+function getHandleAt(mouseX, mouseY, box) {
+  if (!box) return null;
+  const radius = 12; // hit radius in canvas pixels
+  const handles = [
+    { name: "nw", x: box.x1, y: box.y1 },
+    { name: "ne", x: box.x2, y: box.y1 },
+    { name: "sw", x: box.x1, y: box.y2 },
+    { name: "se", x: box.x2, y: box.y2 },
+  ];
+  for (const h of handles) {
+    if (Math.abs(mouseX - h.x) <= radius && Math.abs(mouseY - h.y) <= radius) {
+      return h.name;
+    }
+  }
+  return null;
+}
+
+canvas.onmousedown = (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mouseX = (e.clientX - rect.left) * scaleX;
+  const mouseY = (e.clientY - rect.top) * scaleY;
+
+  // 1. Check if clicking on a resize handle of currently selected box
+  if (selectedBoxIndex >= 0 && selectedBoxIndex < currentBoxes.length) {
+    const handle = getHandleAt(mouseX, mouseY, currentBoxes[selectedBoxIndex]);
+    if (handle) {
+      isResizingBox = true;
+      resizeHandle = handle;
+      dragStartX = mouseX;
+      dragStartY = mouseY;
+      return;
+    }
+  }
+
+  // 2. Draw Mode: Start drawing a new bounding box
+  if (activeTool === "draw") {
+    isDrawingNewBox = true;
+    newBoxStart = { x: mouseX, y: mouseY };
+    newBoxCurrent = { x: mouseX, y: mouseY };
+    redrawCanvas();
+    return;
+  }
+
+  // 3. Find clicked box (check in reverse so topmost box is picked)
+  let hitIndex = -1;
+  for (let i = currentBoxes.length - 1; i >= 0; i--) {
+    const b = currentBoxes[i];
+    if (mouseX >= b.x1 && mouseX <= b.x2 && mouseY >= b.y1 && mouseY <= b.y2) {
+      hitIndex = i;
+      break;
+    }
+  }
+
+  if (hitIndex >= 0) {
+    selectedBoxIndex = hitIndex;
+    updateSelectedToothPanel(currentBoxes[hitIndex]);
+    selectToothByFdi(currentBoxes[hitIndex].cls);
+
+    if (activeTool === "del") {
+      const removed = currentBoxes.splice(hitIndex, 1)[0];
+      selectedBoxIndex = -1;
+      document.getElementById("sum-total").innerText = `${currentBoxes.length}/32`;
+      document.getElementById("sum-missing").innerText = Math.max(0, 32 - currentBoxes.length);
+      document.querySelectorAll(".fdi-cell").forEach(cell => {
+        if (cell.innerText === removed.cls) cell.className = "fdi-cell missing";
+      });
+      redrawCanvas();
+      return;
+    }
+
+    if (activeTool === "label") {
+      const newLabel = prompt("Enter new FDI tooth number (e.g., 11-48):", currentBoxes[hitIndex].cls);
+      if (newLabel && newLabel.trim()) {
+        currentBoxes[hitIndex].cls = newLabel.trim();
+        updateSelectedToothPanel(currentBoxes[hitIndex]);
+        document.querySelectorAll(".fdi-cell").forEach(cell => {
+          if (cell.innerText === newLabel.trim()) cell.className = "fdi-cell high";
+        });
+      }
+      redrawCanvas();
+      return;
+    }
+
+    if (activeTool === "edit" || activeTool === "select") {
+      isDraggingBox = true;
+      dragStartX = mouseX;
+      dragStartY = mouseY;
+    }
+  } else {
+    // Clicked empty space
+    if (activeTool !== "draw") {
+      selectedBoxIndex = -1;
+    }
+  }
+  redrawCanvas();
+};
+
+window.onmousemove = (e) => {
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mouseX = (e.clientX - rect.left) * scaleX;
+  const mouseY = (e.clientY - rect.top) * scaleY;
+
+  // Update cursor hover hints
+  if (!isResizingBox && !isDraggingBox && !isDrawingNewBox) {
+    if (activeTool === "draw") {
+      canvas.style.cursor = "crosshair";
+    } else if (selectedBoxIndex >= 0 && selectedBoxIndex < currentBoxes.length) {
+      const h = getHandleAt(mouseX, mouseY, currentBoxes[selectedBoxIndex]);
+      if (h === "nw" || h === "se") canvas.style.cursor = "nwse-resize";
+      else if (h === "ne" || h === "sw") canvas.style.cursor = "nesw-resize";
+      else {
+        const b = currentBoxes[selectedBoxIndex];
+        if (mouseX >= b.x1 && mouseX <= b.x2 && mouseY >= b.y1 && mouseY <= b.y2) {
+          canvas.style.cursor = "move";
+        } else {
+          canvas.style.cursor = "default";
+        }
+      }
+    } else {
+      canvas.style.cursor = "default";
+    }
+  }
+
+  // Handle Box Resizing
+  if (isResizingBox && selectedBoxIndex >= 0 && selectedBoxIndex < currentBoxes.length) {
+    const b = currentBoxes[selectedBoxIndex];
+    if (resizeHandle === "nw") {
+      b.x1 = mouseX;
+      b.y1 = mouseY;
+    } else if (resizeHandle === "ne") {
+      b.x2 = mouseX;
+      b.y1 = mouseY;
+    } else if (resizeHandle === "sw") {
+      b.x1 = mouseX;
+      b.y2 = mouseY;
+    } else if (resizeHandle === "se") {
+      b.x2 = mouseX;
+      b.y2 = mouseY;
+    }
+    updateSelectedToothPanel(b);
+    redrawCanvas();
+    return;
+  }
+
+  // Handle Box Moving / Dragging
+  if (isDraggingBox && selectedBoxIndex >= 0 && selectedBoxIndex < currentBoxes.length) {
+    const dx = mouseX - dragStartX;
+    const dy = mouseY - dragStartY;
+    const b = currentBoxes[selectedBoxIndex];
+    b.x1 += dx; b.x2 += dx;
+    b.y1 += dy; b.y2 += dy;
+    dragStartX = mouseX;
+    dragStartY = mouseY;
+    updateSelectedToothPanel(b);
+    redrawCanvas();
+    return;
+  }
+
+  // Handle Real-Time Drawing New Box
+  if (isDrawingNewBox && newBoxStart) {
+    newBoxCurrent = { x: mouseX, y: mouseY };
+    redrawCanvas();
+    return;
+  }
+};
+
+window.onmouseup = () => {
+  if (isResizingBox && selectedBoxIndex >= 0 && selectedBoxIndex < currentBoxes.length) {
+    const b = currentBoxes[selectedBoxIndex];
+    // Normalize coordinates so x1 < x2 and y1 < y2
+    const minX = Math.min(b.x1, b.x2);
+    const maxX = Math.max(b.x1, b.x2);
+    const minY = Math.min(b.y1, b.y2);
+    const maxY = Math.max(b.y1, b.y2);
+    b.x1 = minX; b.x2 = maxX;
+    b.y1 = minY; b.y2 = maxY;
+    updateSelectedToothPanel(b);
+    isResizingBox = false;
+    resizeHandle = null;
+    redrawCanvas();
+  }
+
+  isDraggingBox = false;
+
+  if (isDrawingNewBox && newBoxStart && newBoxCurrent) {
+    const minX = Math.min(newBoxStart.x, newBoxCurrent.x);
+    const maxX = Math.max(newBoxStart.x, newBoxCurrent.x);
+    const minY = Math.min(newBoxStart.y, newBoxCurrent.y);
+    const maxY = Math.max(newBoxStart.y, newBoxCurrent.y);
+    const bw = maxX - minX;
+    const bh = maxY - minY;
+
+    // Minimum sensible tooth bounding box size (12x12 px)
+    if (bw > 12 && bh > 12) {
+      // Find the first unassigned FDI tooth number to recommend
+      const existingFdis = new Set(currentBoxes.map(b => b.cls));
+      const allTeeth = [...FDI_UPPER, ...FDI_LOWER];
+      let suggestedFdi = "18";
+      for (const t of allTeeth) {
+        if (!existingFdis.has(t)) {
+          suggestedFdi = t;
+          break;
+        }
+      }
+
+      const chosenFdi = prompt("Assign FDI Tooth Number for newly drawn box (11-48):", suggestedFdi);
+      if (chosenFdi && chosenFdi.trim()) {
+        const newBox = {
+          cls: chosenFdi.trim(),
+          conf: 1.0,
+          x1: minX,
+          y1: minY,
+          x2: maxX,
+          y2: maxY
+        };
+        currentBoxes.push(newBox);
+        selectedBoxIndex = currentBoxes.length - 1;
+        updateSelectedToothPanel(newBox);
+        selectToothByFdi(newBox.cls);
+
+        // Update detection summary numbers
+        document.getElementById("sum-total").innerText = `${currentBoxes.length}/32`;
+        document.getElementById("sum-high").innerText = currentBoxes.filter(b => b.conf >= 0.70).length;
+        document.getElementById("sum-missing").innerText = Math.max(0, 32 - currentBoxes.length);
+
+        // Color cell in tooth chart
+        document.querySelectorAll(".fdi-cell").forEach(cell => {
+          if (cell.innerText === newBox.cls) {
+            cell.className = "fdi-cell high selected";
+          }
+        });
+      }
+    }
+
+    isDrawingNewBox = false;
+    newBoxStart = null;
+    newBoxCurrent = null;
+    redrawCanvas();
+  }
+};
+
+// ── Export Features (CSV, JSON, Save Corrections) ──
+document.getElementById("btn-exp-csv").onclick = () => {
+  let csv = "fdi_number,confidence,x1,y1,x2,y2\n";
+  currentBoxes.forEach(b => {
+    csv += `${b.cls},${b.conf.toFixed(3)},${Math.round(b.x1)},${Math.round(b.y1)},${Math.round(b.x2)},${Math.round(b.y2)}\n`;
+  });
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `dental_chart_${currentImage}.csv`;
+  a.click();
+};
+
+document.getElementById("btn-exp-json").onclick = () => {
+  const jsonStr = JSON.stringify({ image: currentImage, detections: currentBoxes }, null, 2);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `dental_annotations_${currentImage}.json`;
+  a.click();
+};
+
+document.getElementById("btn-save-corrections").onclick = async () => {
+  const saveBtn = document.getElementById("btn-save-corrections");
+  saveBtn.innerText = "Saving...";
+  const res = await fetch("/save_corrections", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      image: currentImage,
+      boxes: currentBoxes,
+      width: canvas.width,
+      height: canvas.height,
+    }),
+  });
+  const data = await res.json();
+  saveBtn.innerText = "✓ Saved!";
+  setTimeout(() => { saveBtn.innerText = "Save Corrections"; }, 2000);
+};
+
+// ── Sliders & Thresholds ──
+document.getElementById("conf-slider").oninput = (e) => {
+  document.getElementById("conf-val").innerText = parseFloat(e.target.value).toFixed(2);
+};
+document.getElementById("conf-slider").onchange = () => loadPatientImage(currentImage);
+
+document.getElementById("iou-slider").oninput = (e) => {
+  document.getElementById("iou-val").innerText = parseFloat(e.target.value).toFixed(2);
+};
+document.getElementById("iou-slider").onchange = () => loadPatientImage(currentImage);
+
+// ── Run Button & Uploader ──
+const runBtn = document.getElementById("btn-run-inference");
+if (runBtn) {
+  runBtn.onclick = async () => {
+    runBtn.innerText = "⏳ RUNNING INFERENCE...";
+    runBtn.style.opacity = "0.7";
+    await loadPatientImage(currentImage);
+    runBtn.innerHTML = "<span>▶</span> RUN INFERENCE (DETECT & NUMBER)";
+    runBtn.style.opacity = "1";
+  };
+}
+
+initOdontogram();
+loadImageBrowserList();
+loadPatientImage("220.jpg");
+</script>
+
+<!-- Modal: Select Folder Path by System Explorer / Presets -->
+<div id="modal-select-folder" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:16px;">📁</span>
+        <b style="font-size:13px; color:#f8fafc;">Select Folder Path on System (Zero Copy / Zero Upload)</b>
+      </div>
+      <button onclick="closeModal('modal-select-folder')" style="background:transparent; border:none; color:#94a3b8; font-size:18px; cursor:pointer; line-height:1;">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div>
+        <label style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:5px; display:block;">Quick Dataset Presets:</label>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <button class="preset-pill" onclick="setFolderPath('datasets/aneesa/images/val')">🔵 Our Validation (102 imgs)</button>
+          <button class="preset-pill" onclick="setFolderPath('datasets/aneesa/images/train')">🟢 Our Training (472 imgs)</button>
+          <button class="preset-pill" onclick="setFolderPath('/media/venkatesh/academics/aneesa-20261015T111900Z-1-001/aneesa/yolov4/yolo11/external/dentex_yolo/images')">🟣 DENTEX Benchmark (271 imgs)</button>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:5px; display:block;">Folder Directory Path:</label>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="modal-folder-path" style="flex:1; padding:8px 10px; font-size:11px; background:#1e293b; border:1px solid #475569; border-radius:6px; color:#38bdf8; font-family:'JetBrains Mono', monospace;" placeholder="/absolute/or/relative/path/to/radiographs">
+          <button onclick="browseFsTo(document.getElementById('modal-folder-path').value)" style="padding:8px 12px; background:#334155; border:1px solid #475569; border-radius:6px; color:#fff; font-size:11px; font-weight:600; cursor:pointer;">Browse</button>
+        </div>
+      </div>
+
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Filesystem Explorer:</label>
+          <button id="btn-fs-up" onclick="navigateFsUp()" style="background:#1e293b; border:1px solid #334155; color:#94a3b8; font-size:10px; padding:3px 8px; border-radius:4px; cursor:pointer;">⬆ Up One Level</button>
+        </div>
+        <div id="fs-browser-list" style="background:#020617; border:1px solid #1e293b; border-radius:6px; height:150px; overflow-y:auto; padding:6px; display:flex; flex-direction:column; gap:3px;">
+          <div style="color:#64748b; font-size:11px; text-align:center; padding:20px;">Loading directory contents...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-select-folder')" style="padding:7px 14px; background:#334155; color:#e2e8f0; border:none; border-radius:6px; font-size:11px; cursor:pointer;">Cancel</button>
+      <button onclick="applySelectedFolder()" style="padding:7px 16px; background:#047857; color:#fff; font-weight:700; border:none; border-radius:6px; font-size:11px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+        <span>📂</span> Open Folder Directly
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Select Single Image Path / Quick Select -->
+<div id="modal-select-image" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:16px;">🖼️</span>
+        <b style="font-size:13px; color:#f8fafc;">Select Radiograph Image by Path (Zero Copy / Zero Upload)</b>
+      </div>
+      <button onclick="closeModal('modal-select-image')" style="background:transparent; border:none; color:#94a3b8; font-size:18px; cursor:pointer; line-height:1;">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div>
+        <label style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:5px; display:block;">Direct Image Path on System:</label>
+        <input type="text" id="modal-image-path" style="width:100%; box-sizing:border-box; padding:8px 10px; font-size:11px; background:#1e293b; border:1px solid #475569; border-radius:6px; color:#38bdf8; font-family:'JetBrains Mono', monospace;" placeholder="/media/venkatesh/.../datasets/aneesa/images/val/220.jpg">
+      </div>
+
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Or Pick From Active Folder:</label>
+          <input type="text" id="modal-image-filter" oninput="filterModalImageList()" placeholder="Filter..." style="padding:2px 8px; font-size:10px; background:#1e293b; border:1px solid #334155; border-radius:4px; color:#fff; width:90px;">
+        </div>
+        <div id="modal-image-list" style="background:#020617; border:1px solid #1e293b; border-radius:6px; height:150px; overflow-y:auto; padding:6px; display:grid; grid-template-columns:repeat(3, 1fr); gap:4px;">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button onclick="closeModal('modal-select-image')" style="padding:7px 14px; background:#334155; color:#e2e8f0; border:none; border-radius:6px; font-size:11px; cursor:pointer;">Cancel</button>
+      <button onclick="applySelectedImage()" style="padding:7px 16px; background:#2563eb; color:#fff; font-weight:700; border:none; border-radius:6px; font-size:11px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+        <span>▶</span> Open Image & Run Model
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

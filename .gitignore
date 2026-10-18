@@ -1,0 +1,42 @@
+# Checkpoints & Weights (>50MB or binary models)
+*.pt
+*.pth
+*.weights
+*.onnx
+*.engine
+weights/
+weight/
+
+# Heavy training logs and checkpoints
+runs/
+runs/**
+runs_nas/
+
+# Python cache and temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+
+# LaTeX build intermediate files (keep .tex, .bib, and .pdf)
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+*.nav
+*.snm
+
+# Old raw materials / backup dirs
+paper_realted_old_materials/
+
+# System / OS
+.DS_Store
+Thumbs.db
+datasets/
