@@ -103,20 +103,3 @@ python scripts/evaluate_all_benchmarks.py
 
 ---
 
-## 📜 Manuscript & Citation
-
-The complete LaTeX manuscript is available in [`paper_manuscript.tex`](paper_manuscript.tex) and the compiled article is in [`paper_manuscript.pdf`](paper_manuscript.pdf).
-
-```bibtex
-@article{ayoob2026fdi,
-  title={Benchmarking Modern Object Detection Paradigms for Automated FDI Tooth Numbering in Panoramic Radiography: A Multi-Center Generalization Study and Interactive Decision-Support Tool},
-  author={Ayoob, Aneesa and Vaddadi, Venkatesh and Yalavarthy, Phaneendra K. and Kandoth, Anupriya and Narayanan, Bargavi and Janakiram, Chandrashekar},
-  journal={IEEE Transactions on Medical Imaging},
-  year={2026}
-}
-```
-
----
-
-## 📄 License
-This repository is released under the [MIT License](LICENSE).
