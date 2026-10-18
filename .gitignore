@@ -22,7 +22,9 @@ __pycache__/
 dist/
 build/
 
-# LaTeX build intermediate files (keep .tex, .bib, and .pdf)
+# LaTeX files and manuscripts (kept local, excluded from GitHub)
+paper_manuscript.*
+*.tex
 *.aux
 *.log
 *.out

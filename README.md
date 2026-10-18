@@ -1,6 +1,6 @@
 # Automated FDI Tooth Numbering in Panoramic Radiography
 
-[![IEEE TMI](https://img.shields.io/badge/IEEE-Transactions%20on%20Medical%20Imaging-blue.svg)](paper_manuscript.pdf)
+[![IEEE TMI](https://img.shields.io/badge/IEEE-Transactions%20on%20Medical%20Imaging-blue.svg)](#abstract)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-31019/)
 [![PyTorch 2.1](https://img.shields.io/badge/PyTorch-2.1%2Bcu128-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
