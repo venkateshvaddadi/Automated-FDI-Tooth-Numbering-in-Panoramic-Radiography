@@ -74,14 +74,30 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 pip install ultralytics opencv-python matplotlib scipy scikit-learn
 ```
 
-### 2. Launching the Interactive Decision-Support Tool
+### 2. Download Model Checkpoints
+All trained model checkpoints (YOLO11m, RT-DETR-L, RT-DETR-X, D-FINE-M, Cascade R-CNN, Faster R-CNN) can be downloaded automatically using the provided script or directly via Google Drive:
+
+* **Automated 1-command download**:
+  ```bash
+  bash download_model_weights.sh
+  ```
+* **Direct Google Drive Link**:
+  [Google Drive Trained Weights Folder](https://drive.google.com/drive/folders/1QyrHJvjcCHT2chnKBEgRVm-unnwnXXdT?usp=sharing)
+
+All `.pt` and `.pth` checkpoint files will be placed into the local `weights/` directory.
+
+### 3. Launching the Interactive Decision-Support Tool
 ```bash
 python gui_v2/app_v2.py --host 0.0.0.0 --port 7861
 ```
 Open `http://localhost:7861` in your browser.
 
-### 3. Running Benchmark Evaluation
+### 4. Running Benchmark Evaluation & Reproduction
 ```bash
+# Evaluate YOLO11m on the sample test set
+python reproduce_benchmark.py --weights weights/yolo11m_teeth_1280.pt --img-dir samples/images --lbl-dir samples/labels
+
+# Run full cross-paradigm evaluation suite
 python scripts/evaluate_all_benchmarks.py
 ```
 

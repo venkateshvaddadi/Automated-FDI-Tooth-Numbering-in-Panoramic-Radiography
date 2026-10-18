@@ -1,36 +1,32 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Model Checkpoint Downloader for Automated FDI Tooth Numbering
-# Downloads pre-trained models (YOLO11m, RT-DETR-L, D-FINE-M) to weights/ directory
+# Model Checkpoints Downloader for Automated FDI Tooth Numbering
+# Downloads pre-trained models directly from Google Drive / Cloud storage to weights/
 # ==============================================================================
 
 set -e
 mkdir -p weights
 
 echo "======================================================================"
-echo "  Downloading Evaluated Model Checkpoints"
+echo "  Downloading Evaluated Pre-trained FDI Model Checkpoints"
 echo "======================================================================"
 
-# GitHub Release Tag URL (Update when new release assets are attached)
-RELEASE_URL="https://github.com/venkateshvaddadi/Automated-FDI-Tooth-Numbering-in-Panoramic-Radiography/releases/download/v1.0"
+# Google Drive shared folder link provided for public reproduction:
+# https://drive.google.com/drive/folders/1QyrHJvjcCHT2chnKBEgRVm-unnwnXXdT?usp=sharing
+GDRIVE_FOLDER_ID="1QyrHJvjcCHT2chnKBEgRVm-unnwnXXdT"
+GDRIVE_URL="https://drive.google.com/drive/folders/${GDRIVE_FOLDER_ID}?usp=sharing"
 
-download_file() {
-    local filename="$1"
-    local dest="weights/${filename}"
-    if [ -f "$dest" ]; then
-        echo "✔ ${dest} already exists, skipping."
-    else
-        echo "⬇ Downloading ${filename}..."
-        # If GitHub release asset is available, use curl/wget:
-        curl -L "${RELEASE_URL}/${filename}" -o "$dest" || echo "[Note] Asset will be available upon publishing GitHub Release v1.0."
-    fi
-}
+# Ensure gdown is installed
+if ! command -v gdown &> /dev/null; then
+    echo "⚠️ 'gdown' tool not found. Installing gdown via pip..."
+    pip install --upgrade gdown
+fi
 
-download_file "yolo11m_teeth_1280.pt"
-download_file "rtdetr_l_teeth_1280.pt"
-download_file "dfine_m_teeth_1280.pth"
+echo "⬇ Fetching all model weight checkpoints into ./weights/ ..."
+gdown --folder "${GDRIVE_URL}" -O weights/
 
+echo ""
 echo "======================================================================"
-echo "Checkpoints directory: ./weights/"
-ls -la weights/
+echo "✔ Checkpoints successfully verified in ./weights/:"
+ls -lh weights/
 echo "======================================================================"
