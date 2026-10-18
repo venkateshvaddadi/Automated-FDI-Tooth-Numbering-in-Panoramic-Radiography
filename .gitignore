@@ -40,3 +40,6 @@ paper_realted_old_materials/
 .DS_Store
 Thumbs.db
 datasets/
+export_weights/
+dental_fdi_model_weights.tar
+dental_fdi_model_weights.tar.gz
